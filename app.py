@@ -11,7 +11,12 @@ import os
 
 import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
 from groq import Groq
+
+# Loads GROQ_API_KEY from a local .env file if one exists (see .env.example).
+# No-op in deployments that set the key another way (env var, st.secrets).
+load_dotenv()
 
 from bank_policies import ATLAS_POLICIES
 from life_event_triggers import LifeEventScanner
@@ -62,15 +67,35 @@ DISCLAIMER = (
 )
 
 
-def get_groq_client():
-    """Build a Groq client from the GROQ_API_KEY environment variable.
+def get_api_key():
+    """Look up the Groq API key from whichever source the current
+    environment uses, so rotating the key never requires a code change:
 
-    Never hardcode a key here — the app reads it from the environment so
-    the same code can run for any developer/demo without editing source.
+    - Local dev: a .env file (loaded above) or an exported env var.
+    - Streamlit Community Cloud: the app's Settings -> Secrets manager,
+      read via st.secrets.
+    - Other hosts (Docker, Render, Railway, etc.): a plain env var set in
+      the platform's dashboard/config.
+
+    Never hardcode a key in source — that's the one thing that *would*
+    require a code change (and a commit) every time it rotates.
     """
-    api_key = os.environ.get("GROQ_API_KEY")
+    try:
+        if "GROQ_API_KEY" in st.secrets:
+            return st.secrets["GROQ_API_KEY"]
+    except Exception:
+        pass  # no secrets.toml configured in this environment — fall through
+    return os.environ.get("GROQ_API_KEY")
+
+
+def get_groq_client():
+    """Build a Groq client from the currently configured API key."""
+    api_key = get_api_key()
     if not api_key:
-        raise RuntimeError("GROQ_API_KEY environment variable is not set.")
+        raise RuntimeError(
+            "GROQ_API_KEY is not set. Set it in a .env file, as an environment "
+            "variable, or in Streamlit's Secrets manager — see README.md."
+        )
     return Groq(api_key=api_key)
 
 
@@ -162,7 +187,7 @@ def render_proactive_notifications():
             notification_preferences=NOTIFICATION_PREFERENCES,
         )
 
-        if os.environ.get("GROQ_API_KEY"):
+        if get_api_key():
             for event in events:
                 try:
                     message = generate_nudge_message(event, SYSTEM_PROMPT)
@@ -215,7 +240,7 @@ def main():
 
     st.title("Atlas Bank — Life Admin Assistant")
 
-    if not os.environ.get("GROQ_API_KEY"):
+    if not get_api_key():
         st.warning(
             "GROQ_API_KEY is not set, so chat responses are disabled. See README.md "
             "for how to get a free key from console.groq.com."

@@ -44,11 +44,29 @@ pip install -r requirements.txt
 
 ### 3. Set your API key
 
+The app checks three places for the key, in this order: `st.secrets`,
+then a `.env` file, then a plain environment variable. Use whichever fits
+where you're running it.
+
+**Local development (recommended — easiest to rotate):**
+
 ```bash
-export GROQ_API_KEY="your-key-here"
+cp .env.example .env
 ```
 
-(On Windows PowerShell: `$env:GROQ_API_KEY="your-key-here"`)
+Open `.env` and paste your key in place of `your-groq-api-key-here`. To
+rotate it later, just edit that one line and restart the app — no
+terminal exports, no code changes. `.env` is gitignored, so it never gets
+committed.
+
+**Or, a one-off shell env var:**
+
+```bash
+export GROQ_API_KEY="your-key-here"       # on Windows PowerShell: $env:GROQ_API_KEY="your-key-here"
+```
+
+This only lasts for the current terminal session, so it's fine for a
+quick test but not for rotating the key regularly.
 
 ### 4. Run the app
 
@@ -57,6 +75,28 @@ streamlit run app.py
 ```
 
 This opens the app in your browser, usually at `http://localhost:8501`.
+
+## Rotating the API key after deployment
+
+Get a new key from [console.groq.com](https://console.groq.com) any time
+your current one is compromised or you just want to cycle it — the app
+never hardcodes a key, so rotating never requires a code change.
+
+- **Local (`.env`)** — edit the `GROQ_API_KEY` line in `.env`, then
+  restart `streamlit run app.py` (env vars are only read at startup).
+- **Streamlit Community Cloud** — open your app, go to **Settings →
+  Secrets**, update:
+  ```toml
+  GROQ_API_KEY = "your-new-key-here"
+  ```
+  Save — the app reboots automatically and picks up the new key. This is
+  the standard way to deploy this app; no `.env` file is needed there.
+- **Other hosts (Docker, Render, Railway, Heroku, etc.)** — update the
+  `GROQ_API_KEY` environment variable in that platform's dashboard/config
+  and redeploy or restart the process.
+
+After rotating, revoke the old key in the Groq console so it stops
+working immediately.
 
 ## Running the tests
 

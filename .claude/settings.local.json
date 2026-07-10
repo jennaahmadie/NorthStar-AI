@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(du -sh \"/Users/jennaahmadie/Desktop/NorthStar AI/venv\" 2>&1; echo \"---\"; ls \"/Users/jennaahmadie/Desktop/NorthStar AI/venv/lib/python3.9/site-packages/\" 2>&1 | head -30; echo \"---pip cache---\"; ls -la ~/Library/Caches/pip 2>&1 | head -5)",
+      "Bash(grep -rniE \"gsk_[a-zA-Z0-9]|sk-[a-zA-Z0-9]{10,}|api_key\\\\s*=\\\\s*[\\\\\"']|secret\\\\s*=\\\\s*[\\\\\"']|password\\\\s*=\\\\s*[\\\\\"']\" --include=\"*.py\" .)",
+      "Bash(grep -B2 \"pass$\")",
+      "Bash(grep -niE \"gsk_[a-zA-Z0-9]|sk-[a-zA-Z0-9]{10,}|api_key\\\\s*=\\\\s*[\\\\\"']|secret\\\\s*=\\\\s*[\\\\\"']|password\\\\s*=\\\\s*[\\\\\"']\" app.py bank_policies.py life_event_triggers.py mock_data.py system_prompt.py test_strict.py)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(mkdir -p \"/Users/jennaahmadie/Desktop/NorthStar AI/.claude\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8501)",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "Bash(curl -s http://localhost:8501/_stcore/health)",
+      "Bash(pkill -f \"streamlit run app.py\")"
+    ]
+  }
+}
